@@ -1,5 +1,7 @@
 # Prompt para instalar en otra Mac
 
+Con esto queda igual que en la Mac principal: el tema de la Terminal y las notificaciones de Claude Code.
+
 ## Antes (lo haces tú, una sola vez)
 
 Estos pasos piden tu contraseña o que inicies sesión, así que Claude no puede hacerlos por ti.
@@ -16,6 +18,7 @@ Estos pasos piden tu contraseña o que inicies sesión, así que Claude no puede
    ```bash
    eval "$(/opt/homebrew/bin/brew shellenv)" && brew install gh && gh auth login --web --git-protocol https
    ```
+   En una Mac con Intel, cambia `/opt/homebrew` por `/usr/local`.
 
 ## El prompt
 
@@ -25,9 +28,9 @@ Abre Claude Code (`claude` en la terminal o la app de escritorio) y pega esto:
 Instala mi configuración de terminal desde mi repo privado de GitHub IFEE09/mac-terminal-setup.
 
 1. Clónalo con `gh repo clone IFEE09/mac-terminal-setup ~/mac-terminal-setup` (si ya existe, haz `git pull`).
-2. Lee el README.md completo para entender qué hace y qué NO debe hacer (solo aspecto, sin atajos, sin reemplazar ls/cat, sin Kitty).
+2. Lee el README.md completo para entender qué hace y qué NO debe hacer. En la Terminal: solo aspecto, sin atajos, sin reemplazar ls/cat, sin Kitty. Las notificaciones de Claude Code (hook Stop en ~/.claude/settings.json) sí van incluidas a propósito.
 3. Verifica que Homebrew esté instalado. Si no, detente y dime qué comando correr: pide contraseña y lo tengo que hacer yo.
 4. Ejecuta `~/mac-terminal-setup/install.sh`.
 5. Verifica lo que dice la sección "Verificación" del README y dime el resultado de cada punto (incluida la notificación de prueba).
-6. Recuérdame abrir una ventana nueva de la Terminal.
+6. Recuérdame abrir una ventana nueva de la Terminal y reiniciar Claude Code para que tome el hook de notificaciones.
 ```

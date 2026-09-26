@@ -2,7 +2,7 @@
 
 Tema para la **Terminal nativa de macOS**, inspirado en el de S4vitar: prompt Powerlevel10k, fuente Hack Nerd Font, fondo transparente con desenfoque y colores vivos.
 
-**Regla principal: solo aspecto.** No agrega atajos de teclado, no reemplaza comandos (`ls` y `cat` siguen siendo los de Mac) y no cambia el comportamiento de ninguna tecla. Solo afecta a la Terminal de Mac: VS Code, la app de Claude y cualquier otra terminal quedan igual.
+**Regla principal para la Terminal: solo aspecto.** No agrega atajos de teclado, no reemplaza comandos (`ls` y `cat` siguen siendo los de Mac) y no cambia el comportamiento de ninguna tecla. Solo afecta a la Terminal de Mac: VS Code, la app de Claude y cualquier otra terminal quedan igual.
 
 Además instala las **notificaciones de Claude Code**: un aviso de macOS cada vez que Claude termina una tarea, con el resumen completo a un clic.
 
@@ -62,6 +62,8 @@ Lo que se agrega a `~/.claude/settings.json`:
   }
 }
 ```
+
+Claude Code lee la configuración al arrancar: después de instalar, cierra y vuelve a abrir Claude Code para que empiecen a salir las notificaciones.
 
 La primera vez, macOS puede pedir permiso para que `terminal-notifier` muestre notificaciones: acéptalo en **Ajustes del Sistema → Notificaciones**.
 
