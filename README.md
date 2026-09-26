@@ -1,8 +1,8 @@
 # mac-terminal-setup
 
-Tema para la **Terminal nativa de macOS**, inspirado en el de S4vitar: prompt Powerlevel10k, fuente Hack Nerd Font, fondo transparente con desenfoque y colores vivos.
+Tema para la **Terminal nativa de macOS**, inspirado en el de S4vitar: prompt Powerlevel10k, fuente Hack Nerd Font, fondo transparente con desenfoque y colores vivos. Además configura la Terminal para recuperar sus ventanas y agrega notificaciones de Claude Code (ver [Extras](#extras-terminal-y-claude-code)).
 
-**Regla principal: solo aspecto.** No agrega atajos de teclado, no reemplaza comandos (`ls` y `cat` siguen siendo los de Mac) y no cambia el comportamiento de ninguna tecla. Solo afecta a la Terminal de Mac: VS Code, la app de Claude y cualquier otra terminal quedan igual.
+**Regla principal: el tema es solo aspecto.** No agrega atajos de teclado, no reemplaza comandos (`ls` y `cat` siguen siendo los de Mac) y no cambia el comportamiento de ninguna tecla. Solo afecta a la Terminal de Mac: VS Code, la app de Claude y cualquier otra terminal quedan igual.
 
 - Instalar en otra Mac con Claude: ver [PROMPT.md](PROMPT.md)
 - Instalar a mano: `./install.sh` (requiere Homebrew)
@@ -17,6 +17,9 @@ Tema para la **Terminal nativa de macOS**, inspirado en el de S4vitar: prompt Po
 | zsh-autosuggestions | Sugerencia en gris según el historial | `brew install zsh-autosuggestions` |
 | zsh-syntax-highlighting | Comando en verde si existe, rojo si no | `brew install zsh-syntax-highlighting` |
 | Perfil "Savitar" | Fuente, transparencia, colores y cursor de la Terminal | `terminal/make-profile.js` |
+| Recuperar ventanas | La Terminal reabre sus ventanas y pestañas tras ⌘Q | `defaults write com.apple.Terminal NSQuitAlwaysKeepsWindows` |
+| terminal-notifier + jq | Notificaciones de Claude Code al terminar | `brew install terminal-notifier jq` |
+| Hooks de Claude Code | Aviso al terminar una tarea o subagente | `claude/notify.sh` + `claude/settings.json` |
 
 ## Archivos
 
@@ -26,6 +29,8 @@ PROMPT.md                  Prompt para Claude Code en otra Mac
 dotfiles/zshrc             → ~/.zshrc
 dotfiles/p10k.zsh          → ~/.p10k.zsh (estilo del prompt: lean, nerdfont, 24h)
 terminal/make-profile.js   Genera el perfil de la Terminal (JXA, sin dependencias)
+claude/notify.sh           → ~/.claude/hooks/notify.sh (notificación al terminar)
+claude/settings.json       Hooks y variables que se mezclan en ~/.claude/settings.json
 ```
 
 ## Qué hace `install.sh`, paso a paso
@@ -35,6 +40,8 @@ terminal/make-profile.js   Genera el perfil de la Terminal (JXA, sin dependencia
 3. Instala la fuente, Powerlevel10k y los dos plugins.
 4. Respalda `~/.zshrc` y `~/.p10k.zsh` si existen y son distintos (`.backup-FECHA`), y copia los del repo.
 5. Genera `Savitar.terminal` con `make-profile.js`, lo importa (se abre una ventana de la Terminal) y lo deja como perfil predeterminado y de inicio.
+6. Activa que la Terminal recupere sus ventanas al reabrirse.
+7. Instala `terminal-notifier` y `jq`, copia `notify.sh` y mezcla `claude/settings.json` en `~/.claude/settings.json` (con respaldo `.backup-FECHA`; conserva tus otros ajustes y hooks, y no duplica nada si se corre otra vez). Al final pide permiso de notificaciones.
 
 ## Detalles del perfil de la Terminal
 
@@ -72,6 +79,34 @@ Todo el tema está dentro de `if [[ "$TERM_PROGRAM" == "Apple_Terminal" && -o in
 - Usa `$HOMEBREW_PREFIX`, por lo que funciona en Macs con Apple Silicon y con Intel.
 - Además agrega `~/.local/bin` al PATH, que es donde se instala Claude Code.
 
+## Extras: Terminal y Claude Code
+
+### Recuperar ventanas
+
+La Terminal reabre sus ventanas y pestañas, cada una en su carpeta, al cerrarla con **⌘Q** y volver a abrirla. Si se cierran las ventanas una por una con la X roja, no se recuperan. Claude no se reinicia solo: en cada pestaña usa `claude --continue` (última conversación de esa carpeta) o `claude --resume` (elegir de una lista).
+
+### Historial de sesiones
+
+`CLAUDE_CODE_FORCE_SESSION_PERSISTENCE=1` está en `~/.zshrc` (y en el `env` de `~/.claude/settings.json`) para que Claude Code guarde siempre el historial y se pueda retomar. Solo usa disco, no tokens.
+
+### Notificaciones
+
+Los hooks `Stop` y `SubagentStop` corren `~/.claude/hooks/notify.sh`, que muestra una notificación con:
+
+- **Título:** "Tarea terminada" o "Subagente terminado (tipo)".
+- **Subtítulo:** la carpeta del proyecto.
+- **Texto:** el inicio del último mensaje de Claude (máx. ~180 caracteres, sin markdown).
+
+Al hacer clic se abre el resumen completo en TextEdit y la notificación se borra. Los resúmenes se guardan en `~/.claude/notificaciones/` y se borran a los 7 días.
+
+**Pasos manuales** (macOS no deja hacerlos por script):
+
+1. Aceptar el aviso de permiso de **terminal-notifier**.
+2. **Ajustes → Notificaciones → terminal-notifier → Estilo de alerta: Persistente**, para que se queden hasta cerrarlas.
+3. Recomendado: apagar **Resumir notificaciones** en ese mismo panel.
+
+Se usa `terminal-notifier` y no `osascript` porque las notificaciones de `osascript` salen a nombre de *Editor de Scripts* y al hacer clic solo abren esa app vacía. Si alguna vez se quedan atoradas en pantalla: `terminal-notifier -remove ALL` y, si siguen, `killall NotificationCenter` (se reinicia solo).
+
 ## Historia: qué se probó y se descartó
 
 Este setup es el resultado de varias iteraciones. Queda documentado para no repetir errores:
@@ -101,6 +136,18 @@ zsh -ic 'whence -w ls cat'                                                   # �
 
 # 5. Sin errores de sintaxis
 zsh -n ~/.zshrc && echo ok                                                   # → ok
+
+# 6. La Terminal recupera sus ventanas
+defaults read com.apple.Terminal NSQuitAlwaysKeepsWindows                    # → 1
+
+# 7. Historial de Claude Code activado
+zsh -ic 'echo $CLAUDE_CODE_FORCE_SESSION_PERSISTENCE'                        # → 1
+
+# 8. Hooks de notificaciones en Claude Code
+jq -r '.hooks.Stop[].hooks[].command' ~/.claude/settings.json                # → ~/.claude/hooks/notify.sh ...
+
+# 9. Permiso y estilo de notificaciones
+terminal-notifier -diagnose | grep -E 'authorization|alert style'            # → authorized / alerts
 ```
 
 ## Desinstalar
@@ -111,4 +158,10 @@ osascript -e 'tell application "Terminal" to set startup settings to settings se
 brew uninstall powerlevel10k zsh-autosuggestions zsh-syntax-highlighting
 brew uninstall --cask font-hack-nerd-font
 # Restaurar el respaldo más reciente de ~/.zshrc (o borrarlo) y borrar ~/.p10k.zsh
+
+# Extras
+defaults delete com.apple.Terminal NSQuitAlwaysKeepsWindows
+brew uninstall terminal-notifier
+rm -rf ~/.claude/hooks/notify.sh ~/.claude/notificaciones
+# Restaurar ~/.claude/settings.json desde su .backup-FECHA más reciente
 ```
