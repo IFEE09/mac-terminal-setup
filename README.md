@@ -31,7 +31,8 @@ dotfiles/p10k.zsh          → ~/.p10k.zsh (estilo del prompt: lean, nerdfont, 2
 terminal/make-profile.js   Genera el perfil de la Terminal (JXA, sin dependencias)
 claude/notify.sh           → ~/.claude/hooks/notify.sh (notificación al terminar)
 claude/clawd.png           → ~/.claude/hooks/clawd.png (monito de Claude Code en la notificación)
-claude/settings.json       Hooks y variables que se mezclan en ~/.claude/settings.json
+claude/settings.json       Hooks, idioma y variables que se mezclan en ~/.claude/settings.json
+claude/CLAUDE.md           Preferencias globales de Claude (español, breve) → ~/.claude/CLAUDE.md
 ```
 
 ## Qué hace `install.sh`, paso a paso
@@ -108,6 +109,10 @@ Al hacer clic se abre el resumen completo en TextEdit y la notificación se borr
 3. Recomendado: apagar **Resumir notificaciones** en ese mismo panel.
 
 Se usa `terminal-notifier` y no `osascript` porque las notificaciones de `osascript` salen a nombre de *Editor de Scripts* y al hacer clic solo abren esa app vacía. Si alguna vez se quedan atoradas en pantalla: `terminal-notifier -remove ALL` y, si siguen, `killall NotificationCenter` (se reinicia solo).
+
+### Preferencias de Claude
+
+`install.sh` fija `"language": "spanish"` en `~/.claude/settings.json` y agrega `claude/CLAUDE.md` a `~/.claude/CLAUDE.md` (sin borrar lo que ya tenga), para que Claude responda siempre en español, breve y preciso.
 
 ## Historia: qué se probó y se descartó
 

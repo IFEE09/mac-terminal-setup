@@ -71,12 +71,20 @@ cp "$REPO/claude/notify.sh" ~/.claude/hooks/notify.sh
 chmod +x ~/.claude/hooks/notify.sh
 cp "$REPO/claude/clawd.png" ~/.claude/hooks/clawd.png
 
+# Preferencias globales de Claude (español, breve): se agregan a ~/.claude/CLAUDE.md sin borrar lo que haya
+if ! grep -qs 'Responde siempre en español' ~/.claude/CLAUDE.md; then
+  [[ -s ~/.claude/CLAUDE.md ]] && echo >> ~/.claude/CLAUDE.md
+  cat "$REPO/claude/CLAUDE.md" >> ~/.claude/CLAUDE.md
+  ok "Preferencias agregadas a ~/.claude/CLAUDE.md"
+fi
+
 # Mezcla con ~/.claude/settings.json sin borrar lo que ya tenga (se puede repetir)
 SETTINGS="$HOME/.claude/settings.json"
 [[ -f "$SETTINGS" ]] || echo '{}' > "$SETTINGS"
 cp "$SETTINGS" "$SETTINGS.backup-$STAMP"
 jq --slurpfile f "$REPO/claude/settings.json" '
-  .env = ((.env // {}) + $f[0].env)
+  . + ($f[0] | del(.env, .hooks))
+  | .env = ((.env // {}) + $f[0].env)
   # quita cualquier hook previo de notify.sh (en cualquier evento) y los eventos que queden vacíos
   | .hooks = ((.hooks // {})
       | map_values([ .[] | select([.hooks[]?.command // ""] | any(test("notify\\.sh")) | not) ])
