@@ -1,5 +1,6 @@
 #!/bin/bash
-# Instala el tema "Savitar" en la Terminal de Mac (solo aspecto, sin atajos).
+# Instala el tema "Savitar" en la Terminal de Mac (solo aspecto, sin atajos)
+# y las notificaciones de Claude Code.
 # Se puede ejecutar varias veces: respalda lo existente y no duplica nada.
 set -euo pipefail
 
@@ -81,6 +82,7 @@ fi
 # Mezcla con ~/.claude/settings.json sin borrar lo que ya tenga (se puede repetir)
 SETTINGS="$HOME/.claude/settings.json"
 [[ -f "$SETTINGS" ]] || echo '{}' > "$SETTINGS"
+jq empty "$SETTINGS" 2>/dev/null || fail "$SETTINGS no es JSON válido; corrígelo y vuelve a correr el script"
 cp "$SETTINGS" "$SETTINGS.backup-$STAMP"
 jq --slurpfile f "$REPO/claude/settings.json" '
   . + ($f[0] | del(.env, .hooks))
@@ -100,3 +102,4 @@ ok "Falta un paso manual: Ajustes → Notificaciones → terminal-notifier → E
 
 echo
 ok "Listo. Abre una ventana nueva de la Terminal para ver el tema."
+ok "La primera notificación de Claude Code puede pedir permiso: acéptalo en Ajustes del Sistema → Notificaciones."
