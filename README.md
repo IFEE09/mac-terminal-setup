@@ -30,6 +30,7 @@ dotfiles/zshrc             → ~/.zshrc
 dotfiles/p10k.zsh          → ~/.p10k.zsh (estilo del prompt: lean, nerdfont, 24h)
 terminal/make-profile.js   Genera el perfil de la Terminal (JXA, sin dependencias)
 claude/notify.sh           → ~/.claude/hooks/notify.sh (notificación al terminar)
+claude/clawd.png           → ~/.claude/hooks/clawd.png (monito de Claude Code en la notificación)
 claude/settings.json       Hooks y variables que se mezclan en ~/.claude/settings.json
 ```
 
@@ -96,6 +97,7 @@ El hook `Stop` corre `~/.claude/hooks/notify.sh` al terminar cada tarea completa
 - **Título:** "Tarea terminada".
 - **Subtítulo:** la carpeta del proyecto.
 - **Texto:** el inicio del último mensaje de Claude (máx. ~180 caracteres, sin markdown).
+- **Imagen:** el monito de Claude Code a la derecha. El icono de la izquierda es el de `terminal-notifier` y no se puede cambiar sin modificar la app firmada.
 
 Al hacer clic se abre el resumen completo en TextEdit y la notificación se borra. Los resúmenes se guardan en `~/.claude/notificaciones/` y se borran a los 7 días.
 

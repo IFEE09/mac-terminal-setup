@@ -37,7 +37,11 @@ printf '%s\n%s — %s\n\n%s\n' "$title" "${project:-Claude Code}" "$(date '+%d/%
 msg=$(printf '%s' "$full" | tr '\n' ' ' | sed -E 's/[*`#>]//g; s/  +/ /g; s/^ //')
 [ ${#msg} -gt 180 ] && msg="${msg:0:177}..."
 
-"$TN" \
+# Monito de Claude Code a la derecha de la notificación (si existe)
+img="$HOME/.claude/hooks/clawd.png"
+[ -f "$img" ] && img_args=(-contentImage "$img") || img_args=()
+
+"$TN" "${img_args[@]}" \
   -title "$title" \
   -subtitle "${project:-Claude Code}" \
   -message "$msg" \

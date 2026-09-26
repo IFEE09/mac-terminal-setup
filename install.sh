@@ -69,6 +69,7 @@ brew install terminal-notifier jq
 mkdir -p ~/.claude/hooks
 cp "$REPO/claude/notify.sh" ~/.claude/hooks/notify.sh
 chmod +x ~/.claude/hooks/notify.sh
+cp "$REPO/claude/clawd.png" ~/.claude/hooks/clawd.png
 
 # Mezcla con ~/.claude/settings.json sin borrar lo que ya tenga (se puede repetir)
 SETTINGS="$HOME/.claude/settings.json"
