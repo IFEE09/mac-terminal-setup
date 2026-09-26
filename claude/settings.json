@@ -13,17 +13,6 @@
           }
         ]
       }
-    ],
-    "SubagentStop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/notify.sh 2>/dev/null || true",
-            "async": true
-          }
-        ]
-      }
     ]
   }
 }

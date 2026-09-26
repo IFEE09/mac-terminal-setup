@@ -76,11 +76,11 @@ SETTINGS="$HOME/.claude/settings.json"
 cp "$SETTINGS" "$SETTINGS.backup-$STAMP"
 jq --slurpfile f "$REPO/claude/settings.json" '
   .env = ((.env // {}) + $f[0].env)
-  | reduce ($f[0].hooks | to_entries[]) as $e (.;
-      .hooks[$e.key] = (
-        [ (.hooks[$e.key] // [])[]
-          | select([.hooks[]?.command // ""] | any(test("notify\\.sh")) | not) ]
-        + $e.value))
+  # quita cualquier hook previo de notify.sh (en cualquier evento) y los eventos que queden vacíos
+  | .hooks = ((.hooks // {})
+      | map_values([ .[] | select([.hooks[]?.command // ""] | any(test("notify\\.sh")) | not) ])
+      | with_entries(select(.value | length > 0)))
+  | reduce ($f[0].hooks | to_entries[]) as $e (.; .hooks[$e.key] = ((.hooks[$e.key] // []) + $e.value))
 ' "$SETTINGS.backup-$STAMP" > "$SETTINGS" || { cp "$SETTINGS.backup-$STAMP" "$SETTINGS"; fail "No se pudo actualizar $SETTINGS"; }
 ok "Hooks de notificaciones agregados a $SETTINGS (respaldo: $SETTINGS.backup-$STAMP)"
 

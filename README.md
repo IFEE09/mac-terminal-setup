@@ -19,7 +19,7 @@ Tema para la **Terminal nativa de macOS**, inspirado en el de S4vitar: prompt Po
 | Perfil "Savitar" | Fuente, transparencia, colores y cursor de la Terminal | `terminal/make-profile.js` |
 | Recuperar ventanas | La Terminal reabre sus ventanas y pestañas tras ⌘Q | `defaults write com.apple.Terminal NSQuitAlwaysKeepsWindows` |
 | terminal-notifier + jq | Notificaciones de Claude Code al terminar | `brew install terminal-notifier jq` |
-| Hooks de Claude Code | Aviso al terminar una tarea o subagente | `claude/notify.sh` + `claude/settings.json` |
+| Hook de Claude Code | Aviso al terminar una tarea | `claude/notify.sh` + `claude/settings.json` |
 
 ## Archivos
 
@@ -41,7 +41,7 @@ claude/settings.json       Hooks y variables que se mezclan en ~/.claude/setting
 4. Respalda `~/.zshrc` y `~/.p10k.zsh` si existen y son distintos (`.backup-FECHA`), y copia los del repo.
 5. Genera `Savitar.terminal` con `make-profile.js`, lo importa (se abre una ventana de la Terminal) y lo deja como perfil predeterminado y de inicio.
 6. Activa que la Terminal recupere sus ventanas al reabrirse.
-7. Instala `terminal-notifier` y `jq`, copia `notify.sh` y mezcla `claude/settings.json` en `~/.claude/settings.json` (con respaldo `.backup-FECHA`; conserva tus otros ajustes y hooks, y no duplica nada si se corre otra vez). Al final pide permiso de notificaciones.
+7. Instala `terminal-notifier` y `jq`, copia `notify.sh` y mezcla `claude/settings.json` en `~/.claude/settings.json` (con respaldo `.backup-FECHA`; conserva tus otros ajustes y hooks, reemplaza hooks anteriores de `notify.sh` y no duplica nada si se corre otra vez). Al final pide permiso de notificaciones.
 
 ## Detalles del perfil de la Terminal
 
@@ -91,9 +91,9 @@ La Terminal reabre sus ventanas y pestañas, cada una en su carpeta, al cerrarla
 
 ### Notificaciones
 
-Los hooks `Stop` y `SubagentStop` corren `~/.claude/hooks/notify.sh`, que muestra una notificación con:
+El hook `Stop` corre `~/.claude/hooks/notify.sh` al terminar cada tarea completa (no avisa por subagentes), y muestra una notificación con:
 
-- **Título:** "Tarea terminada" o "Subagente terminado (tipo)".
+- **Título:** "Tarea terminada".
 - **Subtítulo:** la carpeta del proyecto.
 - **Texto:** el inicio del último mensaje de Claude (máx. ~180 caracteres, sin markdown).
 
