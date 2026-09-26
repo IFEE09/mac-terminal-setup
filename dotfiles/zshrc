@@ -1,5 +1,8 @@
 export PATH="$HOME/.local/bin:$PATH"
 
+# Claude Code: guardar siempre el historial de sesiones (para retomar con claude --continue)
+export CLAUDE_CODE_FORCE_SESSION_PERSISTENCE=1
+
 # Tema visual: solo en la Terminal de Mac (las demás terminales quedan como vienen)
 if [[ "$TERM_PROGRAM" == "Apple_Terminal" && -o interactive ]]; then
   BREW="${HOMEBREW_PREFIX:-/opt/homebrew}"

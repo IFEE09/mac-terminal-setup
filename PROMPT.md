@@ -32,7 +32,7 @@ Instala mi configuración de terminal desde mi repo privado de GitHub IFEE09/mac
 3. Verifica que Homebrew esté instalado. Si no, detente y dime qué comando correr: pide contraseña y lo tengo que hacer yo.
 4. Ejecuta `~/mac-terminal-setup/install.sh`.
 5. Verifica lo que dice la sección "Verificación" del README y dime el resultado de cada punto (incluida la notificación de prueba).
-6. Recuérdame abrir una ventana nueva de la Terminal y reiniciar Claude Code para que tome el hook de notificaciones.
+6. Recuérdame los pasos manuales de notificaciones (permitir terminal-notifier y ponerlo en Persistente), abrir una ventana nueva de la Terminal y reiniciar Claude Code para que tome el hook de notificaciones.
 ```
 
 ## Opcional: Claude Usage

@@ -1,10 +1,10 @@
 # mac-terminal-setup
 
-Tema para la **Terminal nativa de macOS**, inspirado en el de S4vitar: prompt Powerlevel10k, fuente Hack Nerd Font, fondo transparente con desenfoque y colores vivos.
+Tema para la **Terminal nativa de macOS**, inspirado en el de S4vitar: prompt Powerlevel10k, fuente Hack Nerd Font, fondo transparente con desenfoque y colores vivos. Además configura la Terminal para recuperar sus ventanas y agrega notificaciones de Claude Code (ver [Extras](#extras-terminal-y-claude-code)).
 
 **Regla principal para la Terminal: solo aspecto.** No agrega atajos de teclado, no reemplaza comandos (`ls` y `cat` siguen siendo los de Mac) y no cambia el comportamiento de ninguna tecla. Solo afecta a la Terminal de Mac: VS Code, la app de Claude y cualquier otra terminal quedan igual.
 
-Además instala las **notificaciones de Claude Code**: un aviso de macOS cada vez que Claude termina una tarea, con el resumen completo a un clic.
+Además instala las **notificaciones de Claude Code**: un aviso de macOS cada vez que Claude termina una tarea, con el resumen completo a un clic, y otros extras (ver [Extras](#extras-terminal-y-claude-code)).
 
 - Instalar en otra Mac con Claude: ver [PROMPT.md](PROMPT.md)
 - Instalar a mano: `./install.sh` (requiere Homebrew)
@@ -28,8 +28,9 @@ git clone https://github.com/IFEE09/claude-usage.git ~/claude-usage
 | zsh-autosuggestions | Sugerencia en gris según el historial | `brew install zsh-autosuggestions` |
 | zsh-syntax-highlighting | Comando en verde si existe, rojo si no | `brew install zsh-syntax-highlighting` |
 | Perfil "Savitar" | Fuente, transparencia, colores y cursor de la Terminal | `terminal/make-profile.js` |
-| terminal-notifier y jq | Mostrar las notificaciones de Claude Code y leer sus datos | `brew install terminal-notifier jq` |
-| Hook de notificaciones | Aviso al terminar cada tarea de Claude Code | `claude/notify.sh` → `~/.claude/hooks/` |
+| Recuperar ventanas | La Terminal reabre sus ventanas y pestañas tras ⌘Q | `defaults write com.apple.Terminal NSQuitAlwaysKeepsWindows` |
+| terminal-notifier + jq | Notificaciones de Claude Code al terminar | `brew install terminal-notifier jq` |
+| Hook de Claude Code | Aviso al terminar una tarea | `claude/notify.sh` + `claude/settings.json` |
 
 ## Archivos
 
@@ -39,8 +40,10 @@ PROMPT.md                  Prompt para Claude Code en otra Mac
 dotfiles/zshrc             → ~/.zshrc
 dotfiles/p10k.zsh          → ~/.p10k.zsh (estilo del prompt: lean, nerdfont, 24h)
 terminal/make-profile.js   Genera el perfil de la Terminal (JXA, sin dependencias)
-claude/notify.sh           → ~/.claude/hooks/notify.sh (notificación al terminar una tarea)
-claude/clawd.png           → ~/.claude/hooks/clawd.png (imagen de la notificación)
+claude/notify.sh           → ~/.claude/hooks/notify.sh (notificación al terminar)
+claude/clawd.png           → ~/.claude/hooks/clawd.png (monito de Claude Code en la notificación)
+claude/settings.json       Hooks, idioma y variables que se mezclan en ~/.claude/settings.json
+claude/CLAUDE.md           Preferencias globales de Claude (español, breve) → ~/.claude/CLAUDE.md
 ```
 
 ## Qué hace `install.sh`, paso a paso
@@ -50,31 +53,8 @@ claude/clawd.png           → ~/.claude/hooks/clawd.png (imagen de la notificac
 3. Instala la fuente, Powerlevel10k y los dos plugins.
 4. Respalda `~/.zshrc` y `~/.p10k.zsh` si existen y son distintos (`.backup-FECHA`), y copia los del repo.
 5. Genera `Savitar.terminal` con `make-profile.js`, lo importa (se abre una ventana de la Terminal) y lo deja como perfil predeterminado y de inicio.
-6. Instala `terminal-notifier` y `jq`, copia `notify.sh` y `clawd.png` a `~/.claude/hooks/` y agrega el hook `Stop` a `~/.claude/settings.json`. No borra nada de lo que ya tengas ahí: respalda el archivo (`.backup-FECHA`) y, si el hook ya existe, no lo duplica.
-
-## Notificaciones de Claude Code
-
-Cada vez que Claude Code termina de responder, el hook `Stop` corre `~/.claude/hooks/notify.sh`, que:
-
-- Muestra una notificación de macOS con el nombre del proyecto y las primeras líneas de la respuesta (sonido "Glass").
-- Guarda la respuesta completa en `~/.claude/notificaciones/` y la abre en TextEdit si das clic en la notificación. Los archivos de más de 7 días se borran solos.
-- Corre en segundo plano (`async`), así que no hace esperar a Claude. Si algo falla, no muestra error.
-
-Lo que se agrega a `~/.claude/settings.json`:
-
-```json
-{
-  "hooks": {
-    "Stop": [
-      { "hooks": [{ "type": "command", "command": "~/.claude/hooks/notify.sh 2>/dev/null || true", "async": true }] }
-    ]
-  }
-}
-```
-
-Claude Code lee la configuración al arrancar: después de instalar, cierra y vuelve a abrir Claude Code para que empiecen a salir las notificaciones.
-
-La primera vez, macOS puede pedir permiso para que `terminal-notifier` muestre notificaciones: acéptalo en **Ajustes del Sistema → Notificaciones**.
+6. Activa que la Terminal recupere sus ventanas al reabrirse.
+7. Instala `terminal-notifier` y `jq`, copia `notify.sh` y mezcla `claude/settings.json` en `~/.claude/settings.json` (con respaldo `.backup-FECHA`; conserva tus otros ajustes y hooks, reemplaza hooks anteriores de `notify.sh` y no duplica nada si se corre otra vez). Al final pide permiso de notificaciones.
 
 ## Detalles del perfil de la Terminal
 
@@ -112,6 +92,41 @@ Todo el tema está dentro de `if [[ "$TERM_PROGRAM" == "Apple_Terminal" && -o in
 - Usa `$HOMEBREW_PREFIX`, por lo que funciona en Macs con Apple Silicon y con Intel.
 - Además agrega `~/.local/bin` al PATH, que es donde se instala Claude Code.
 
+## Extras: Terminal y Claude Code
+
+### Recuperar ventanas
+
+La Terminal reabre sus ventanas y pestañas, cada una en su carpeta, al cerrarla con **⌘Q** y volver a abrirla. Si se cierran las ventanas una por una con la X roja, no se recuperan. Claude no se reinicia solo: en cada pestaña usa `claude --continue` (última conversación de esa carpeta) o `claude --resume` (elegir de una lista).
+
+### Historial de sesiones
+
+`CLAUDE_CODE_FORCE_SESSION_PERSISTENCE=1` está en `~/.zshrc` (y en el `env` de `~/.claude/settings.json`) para que Claude Code guarde siempre el historial y se pueda retomar. Solo usa disco, no tokens.
+
+### Notificaciones
+
+El hook `Stop` corre `~/.claude/hooks/notify.sh` al terminar cada tarea completa (no avisa por subagentes), y muestra una notificación con:
+
+- **Título:** "Tarea terminada".
+- **Subtítulo:** la carpeta del proyecto.
+- **Texto:** el inicio del último mensaje de Claude (máx. ~180 caracteres, sin markdown).
+- **Imagen:** el monito de Claude Code a la derecha. El icono de la izquierda es el de `terminal-notifier` y no se puede cambiar sin modificar la app firmada.
+
+Al hacer clic se abre el resumen completo en TextEdit y la notificación se borra. Corre en segundo plano (`async`), así que no hace esperar a Claude; si algo falla, no muestra error.
+
+Claude Code lee la configuración al arrancar: después de instalar, cierra y vuelve a abrir Claude Code para que empiecen a salir las notificaciones. Los resúmenes se guardan en `~/.claude/notificaciones/` y se borran a los 7 días.
+
+**Pasos manuales** (macOS no deja hacerlos por script):
+
+1. Aceptar el aviso de permiso de **terminal-notifier**.
+2. **Ajustes → Notificaciones → terminal-notifier → Estilo de alerta: Persistente**, para que se queden hasta cerrarlas.
+3. Recomendado: apagar **Resumir notificaciones** en ese mismo panel.
+
+Se usa `terminal-notifier` y no `osascript` porque las notificaciones de `osascript` salen a nombre de *Editor de Scripts* y al hacer clic solo abren esa app vacía. Si alguna vez se quedan atoradas en pantalla: `terminal-notifier -remove ALL` y, si siguen, `killall NotificationCenter` (se reinicia solo).
+
+### Preferencias de Claude
+
+`install.sh` fija `"language": "spanish"` en `~/.claude/settings.json` y agrega `claude/CLAUDE.md` a `~/.claude/CLAUDE.md` (sin borrar lo que ya tenga), para que Claude responda siempre en español, breve y preciso, en modo *caveman* (estilo telegráfico que ahorra tokens de salida, sin recortar código, comandos, errores ni advertencias).
+
 ## Historia: qué se probó y se descartó
 
 Este setup es el resultado de varias iteraciones. Queda documentado para no repetir errores:
@@ -142,8 +157,19 @@ zsh -ic 'whence -w ls cat'                                                   # �
 # 5. Sin errores de sintaxis
 zsh -n ~/.zshrc && echo ok                                                   # → ok
 
-# 6. Notificaciones: el hook está configurado y el script se ejecuta
-jq '.hooks.Stop' ~/.claude/settings.json | grep -c notify.sh                 # → 1
+# 6. La Terminal recupera sus ventanas
+defaults read com.apple.Terminal NSQuitAlwaysKeepsWindows                    # → 1
+
+# 7. Historial de Claude Code activado
+zsh -ic 'echo $CLAUDE_CODE_FORCE_SESSION_PERSISTENCE'                        # → 1
+
+# 8. Hooks de notificaciones en Claude Code
+jq -r '.hooks.Stop[].hooks[].command' ~/.claude/settings.json                # → ~/.claude/hooks/notify.sh ...
+
+# 9. Permiso y estilo de notificaciones
+terminal-notifier -diagnose | grep -E 'authorization|alert style'            # → authorized / alerts
+
+# 10. El script de notificaciones funciona
 echo '{"cwd":"/tmp/prueba","last_assistant_message":"Prueba"}' | ~/.claude/hooks/notify.sh   # → aparece una notificación
 ```
 
@@ -156,9 +182,11 @@ brew uninstall powerlevel10k zsh-autosuggestions zsh-syntax-highlighting
 brew uninstall --cask font-hack-nerd-font
 # Restaurar el respaldo más reciente de ~/.zshrc (o borrarlo) y borrar ~/.p10k.zsh
 
-# Notificaciones de Claude Code
+# Extras
+defaults delete com.apple.Terminal NSQuitAlwaysKeepsWindows
 jq 'del(.hooks.Stop[] | select(any(.hooks[]; .command | contains("notify.sh"))))' ~/.claude/settings.json > /tmp/s.json && mv /tmp/s.json ~/.claude/settings.json
 rm -f ~/.claude/hooks/notify.sh ~/.claude/hooks/clawd.png
 rm -rf ~/.claude/notificaciones
 brew uninstall terminal-notifier
+# Quitar las preferencias de ~/.claude/CLAUDE.md y "language" de ~/.claude/settings.json si ya no las quieres
 ```

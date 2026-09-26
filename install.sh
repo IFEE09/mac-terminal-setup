@@ -60,26 +60,45 @@ osascript -e 'tell application "Terminal"
 end tell'
 ok "Perfil 'Savitar' importado y marcado como predeterminado"
 
-# 5. Notificaciones de Claude Code (aviso al terminar cada tarea)
-info "Configurando notificaciones de Claude Code..."
+# 5. Terminal: recuperar ventanas y pestañas al cerrar con Cmd+Q y volver a abrir
+defaults write com.apple.Terminal NSQuitAlwaysKeepsWindows -bool true
+ok "La Terminal recuperará sus ventanas al reabrirse"
+
+# 6. Claude Code: notificaciones al terminar y historial de sesiones
+info "Configurando Claude Code..."
 brew install terminal-notifier jq
 mkdir -p ~/.claude/hooks
-cp "$REPO/claude/notify.sh" "$REPO/claude/clawd.png" ~/.claude/hooks/
+cp "$REPO/claude/notify.sh" ~/.claude/hooks/notify.sh
 chmod +x ~/.claude/hooks/notify.sh
+cp "$REPO/claude/clawd.png" ~/.claude/hooks/clawd.png
 
+# Preferencias globales de Claude (español, breve): se agregan a ~/.claude/CLAUDE.md sin borrar lo que haya
+if ! grep -qs 'Responde siempre en español' ~/.claude/CLAUDE.md; then
+  [[ -s ~/.claude/CLAUDE.md ]] && echo >> ~/.claude/CLAUDE.md
+  cat "$REPO/claude/CLAUDE.md" >> ~/.claude/CLAUDE.md
+  ok "Preferencias agregadas a ~/.claude/CLAUDE.md"
+fi
+
+# Mezcla con ~/.claude/settings.json sin borrar lo que ya tenga (se puede repetir)
 SETTINGS="$HOME/.claude/settings.json"
-HOOK_CMD='~/.claude/hooks/notify.sh 2>/dev/null || true'
 [[ -f "$SETTINGS" ]] || echo '{}' > "$SETTINGS"
 jq empty "$SETTINGS" 2>/dev/null || fail "$SETTINGS no es JSON válido; corrígelo y vuelve a correr el script"
-if jq -e --arg cmd "$HOOK_CMD" '[.hooks.Stop[]?.hooks[]?.command] | index($cmd)' "$SETTINGS" >/dev/null; then
-  ok "El hook ya estaba en $SETTINGS"
-else
-  cp "$SETTINGS" "$SETTINGS.backup-$STAMP"
-  jq --arg cmd "$HOOK_CMD" \
-    '.hooks.Stop += [{"hooks": [{"type": "command", "command": $cmd, "async": true}]}]' \
-    "$SETTINGS.backup-$STAMP" > "$SETTINGS"
-  ok "Hook agregado a $SETTINGS (respaldo: $SETTINGS.backup-$STAMP)"
-fi
+cp "$SETTINGS" "$SETTINGS.backup-$STAMP"
+jq --slurpfile f "$REPO/claude/settings.json" '
+  . + ($f[0] | del(.env, .hooks))
+  | .env = ((.env // {}) + $f[0].env)
+  # quita cualquier hook previo de notify.sh (en cualquier evento) y los eventos que queden vacíos
+  | .hooks = ((.hooks // {})
+      | map_values([ .[] | select([.hooks[]?.command // ""] | any(test("notify\\.sh")) | not) ])
+      | with_entries(select(.value | length > 0)))
+  | reduce ($f[0].hooks | to_entries[]) as $e (.; .hooks[$e.key] = ((.hooks[$e.key] // []) + $e.value))
+' "$SETTINGS.backup-$STAMP" > "$SETTINGS" || { cp "$SETTINGS.backup-$STAMP" "$SETTINGS"; fail "No se pudo actualizar $SETTINGS"; }
+ok "Hooks de notificaciones agregados a $SETTINGS (respaldo: $SETTINGS.backup-$STAMP)"
+
+# Pide permiso de notificaciones (macOS muestra un aviso: dale Permitir)
+open -a "$(brew --prefix terminal-notifier)/terminal-notifier.app" --args \
+  -title "Claude Code" -message "Permite las notificaciones para terminar la configuración"
+ok "Falta un paso manual: Ajustes → Notificaciones → terminal-notifier → Estilo de alerta: Persistente"
 
 echo
 ok "Listo. Abre una ventana nueva de la Terminal para ver el tema."
