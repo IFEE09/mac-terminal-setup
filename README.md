@@ -112,7 +112,7 @@ Se usa `terminal-notifier` y no `osascript` porque las notificaciones de `osascr
 
 ### Preferencias de Claude
 
-`install.sh` fija `"language": "spanish"` en `~/.claude/settings.json` y agrega `claude/CLAUDE.md` a `~/.claude/CLAUDE.md` (sin borrar lo que ya tenga), para que Claude responda siempre en español, breve y preciso.
+`install.sh` fija `"language": "spanish"` en `~/.claude/settings.json` y agrega `claude/CLAUDE.md` a `~/.claude/CLAUDE.md` (sin borrar lo que ya tenga), para que Claude responda siempre en español, breve y preciso, en modo *caveman* (estilo telegráfico que ahorra tokens de salida, sin recortar código, comandos, errores ni advertencias).
 
 ## Historia: qué se probó y se descartó
 
