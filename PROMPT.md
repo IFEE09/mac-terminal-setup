@@ -25,7 +25,7 @@ Estos pasos piden tu contraseña o que inicies sesión, así que Claude no puede
 Abre Claude Code (`claude` en la terminal o la app de escritorio) y pega esto:
 
 ```text
-Instala mi configuración de terminal desde mi repo privado de GitHub IFEE09/mac-terminal-setup.
+Instala mi configuración de terminal desde el repo de GitHub IFEE09/mac-terminal-setup.
 
 1. Clónalo con `gh repo clone IFEE09/mac-terminal-setup ~/mac-terminal-setup` (si ya existe, haz `git pull`).
 2. Lee el README.md completo para entender qué hace y qué NO debe hacer. En la Terminal: solo aspecto, sin atajos, sin reemplazar ls/cat, sin Kitty. Las notificaciones de Claude Code (hook Stop en ~/.claude/settings.json) sí van incluidas a propósito.
