@@ -9,6 +9,15 @@ Además instala las **notificaciones de Claude Code**: un aviso de macOS cada ve
 - Instalar en otra Mac con Claude: ver [PROMPT.md](PROMPT.md)
 - Instalar a mano: `./install.sh` (requiere Homebrew)
 
+## Opcional: Claude Usage
+
+No viene incluida en este instalador. Si también la quieres, es una app aparte para la barra de menús que muestra tus límites de uso de Claude: **[IFEE09/claude-usage](https://github.com/IFEE09/claude-usage)**
+
+```bash
+git clone https://github.com/IFEE09/claude-usage.git ~/claude-usage
+~/claude-usage/build.sh --install
+```
+
 ## Qué se instala
 
 | Pieza | Para qué | Cómo |

@@ -34,3 +34,12 @@ Instala mi configuración de terminal desde mi repo privado de GitHub IFEE09/mac
 5. Verifica lo que dice la sección "Verificación" del README y dime el resultado de cada punto (incluida la notificación de prueba).
 6. Recuérdame abrir una ventana nueva de la Terminal y reiniciar Claude Code para que tome el hook de notificaciones.
 ```
+
+## Opcional: Claude Usage
+
+No viene incluida en este instalador. Si también la quieres, es una app aparte para la barra de menús que muestra tus límites de uso de Claude: **[IFEE09/claude-usage](https://github.com/IFEE09/claude-usage)**
+
+```bash
+git clone https://github.com/IFEE09/claude-usage.git ~/claude-usage
+~/claude-usage/build.sh --install
+```
