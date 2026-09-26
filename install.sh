@@ -1,5 +1,6 @@
 #!/bin/bash
-# Instala el tema "Savitar" en la Terminal de Mac (solo aspecto, sin atajos).
+# Instala el tema "Savitar" en la Terminal de Mac (solo aspecto, sin atajos)
+# y las notificaciones de Claude Code.
 # Se puede ejecutar varias veces: respalda lo existente y no duplica nada.
 set -euo pipefail
 
@@ -59,5 +60,27 @@ osascript -e 'tell application "Terminal"
 end tell'
 ok "Perfil 'Savitar' importado y marcado como predeterminado"
 
+# 5. Notificaciones de Claude Code (aviso al terminar cada tarea)
+info "Configurando notificaciones de Claude Code..."
+brew install terminal-notifier jq
+mkdir -p ~/.claude/hooks
+cp "$REPO/claude/notify.sh" "$REPO/claude/clawd.png" ~/.claude/hooks/
+chmod +x ~/.claude/hooks/notify.sh
+
+SETTINGS="$HOME/.claude/settings.json"
+HOOK_CMD='~/.claude/hooks/notify.sh 2>/dev/null || true'
+[[ -f "$SETTINGS" ]] || echo '{}' > "$SETTINGS"
+jq empty "$SETTINGS" 2>/dev/null || fail "$SETTINGS no es JSON válido; corrígelo y vuelve a correr el script"
+if jq -e --arg cmd "$HOOK_CMD" '[.hooks.Stop[]?.hooks[]?.command] | index($cmd)' "$SETTINGS" >/dev/null; then
+  ok "El hook ya estaba en $SETTINGS"
+else
+  cp "$SETTINGS" "$SETTINGS.backup-$STAMP"
+  jq --arg cmd "$HOOK_CMD" \
+    '.hooks.Stop += [{"hooks": [{"type": "command", "command": $cmd, "async": true}]}]' \
+    "$SETTINGS.backup-$STAMP" > "$SETTINGS"
+  ok "Hook agregado a $SETTINGS (respaldo: $SETTINGS.backup-$STAMP)"
+fi
+
 echo
 ok "Listo. Abre una ventana nueva de la Terminal para ver el tema."
+ok "La primera notificación de Claude Code puede pedir permiso: acéptalo en Ajustes del Sistema → Notificaciones."

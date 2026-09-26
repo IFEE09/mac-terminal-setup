@@ -4,6 +4,8 @@ Tema para la **Terminal nativa de macOS**, inspirado en el de S4vitar: prompt Po
 
 **Regla principal: solo aspecto.** No agrega atajos de teclado, no reemplaza comandos (`ls` y `cat` siguen siendo los de Mac) y no cambia el comportamiento de ninguna tecla. Solo afecta a la Terminal de Mac: VS Code, la app de Claude y cualquier otra terminal quedan igual.
 
+Además instala las **notificaciones de Claude Code**: un aviso de macOS cada vez que Claude termina una tarea, con el resumen completo a un clic.
+
 - Instalar en otra Mac con Claude: ver [PROMPT.md](PROMPT.md)
 - Instalar a mano: `./install.sh` (requiere Homebrew)
 
@@ -17,6 +19,8 @@ Tema para la **Terminal nativa de macOS**, inspirado en el de S4vitar: prompt Po
 | zsh-autosuggestions | Sugerencia en gris según el historial | `brew install zsh-autosuggestions` |
 | zsh-syntax-highlighting | Comando en verde si existe, rojo si no | `brew install zsh-syntax-highlighting` |
 | Perfil "Savitar" | Fuente, transparencia, colores y cursor de la Terminal | `terminal/make-profile.js` |
+| terminal-notifier y jq | Mostrar las notificaciones de Claude Code y leer sus datos | `brew install terminal-notifier jq` |
+| Hook de notificaciones | Aviso al terminar cada tarea de Claude Code | `claude/notify.sh` → `~/.claude/hooks/` |
 
 ## Archivos
 
@@ -26,6 +30,8 @@ PROMPT.md                  Prompt para Claude Code en otra Mac
 dotfiles/zshrc             → ~/.zshrc
 dotfiles/p10k.zsh          → ~/.p10k.zsh (estilo del prompt: lean, nerdfont, 24h)
 terminal/make-profile.js   Genera el perfil de la Terminal (JXA, sin dependencias)
+claude/notify.sh           → ~/.claude/hooks/notify.sh (notificación al terminar una tarea)
+claude/clawd.png           → ~/.claude/hooks/clawd.png (imagen de la notificación)
 ```
 
 ## Qué hace `install.sh`, paso a paso
@@ -35,6 +41,29 @@ terminal/make-profile.js   Genera el perfil de la Terminal (JXA, sin dependencia
 3. Instala la fuente, Powerlevel10k y los dos plugins.
 4. Respalda `~/.zshrc` y `~/.p10k.zsh` si existen y son distintos (`.backup-FECHA`), y copia los del repo.
 5. Genera `Savitar.terminal` con `make-profile.js`, lo importa (se abre una ventana de la Terminal) y lo deja como perfil predeterminado y de inicio.
+6. Instala `terminal-notifier` y `jq`, copia `notify.sh` y `clawd.png` a `~/.claude/hooks/` y agrega el hook `Stop` a `~/.claude/settings.json`. No borra nada de lo que ya tengas ahí: respalda el archivo (`.backup-FECHA`) y, si el hook ya existe, no lo duplica.
+
+## Notificaciones de Claude Code
+
+Cada vez que Claude Code termina de responder, el hook `Stop` corre `~/.claude/hooks/notify.sh`, que:
+
+- Muestra una notificación de macOS con el nombre del proyecto y las primeras líneas de la respuesta (sonido "Glass").
+- Guarda la respuesta completa en `~/.claude/notificaciones/` y la abre en TextEdit si das clic en la notificación. Los archivos de más de 7 días se borran solos.
+- Corre en segundo plano (`async`), así que no hace esperar a Claude. Si algo falla, no muestra error.
+
+Lo que se agrega a `~/.claude/settings.json`:
+
+```json
+{
+  "hooks": {
+    "Stop": [
+      { "hooks": [{ "type": "command", "command": "~/.claude/hooks/notify.sh 2>/dev/null || true", "async": true }] }
+    ]
+  }
+}
+```
+
+La primera vez, macOS puede pedir permiso para que `terminal-notifier` muestre notificaciones: acéptalo en **Ajustes del Sistema → Notificaciones**.
 
 ## Detalles del perfil de la Terminal
 
@@ -101,6 +130,10 @@ zsh -ic 'whence -w ls cat'                                                   # �
 
 # 5. Sin errores de sintaxis
 zsh -n ~/.zshrc && echo ok                                                   # → ok
+
+# 6. Notificaciones: el hook está configurado y el script se ejecuta
+jq '.hooks.Stop' ~/.claude/settings.json | grep -c notify.sh                 # → 1
+echo '{"cwd":"/tmp/prueba","last_assistant_message":"Prueba"}' | ~/.claude/hooks/notify.sh   # → aparece una notificación
 ```
 
 ## Desinstalar
@@ -111,4 +144,10 @@ osascript -e 'tell application "Terminal" to set startup settings to settings se
 brew uninstall powerlevel10k zsh-autosuggestions zsh-syntax-highlighting
 brew uninstall --cask font-hack-nerd-font
 # Restaurar el respaldo más reciente de ~/.zshrc (o borrarlo) y borrar ~/.p10k.zsh
+
+# Notificaciones de Claude Code
+jq 'del(.hooks.Stop[] | select(any(.hooks[]; .command | contains("notify.sh"))))' ~/.claude/settings.json > /tmp/s.json && mv /tmp/s.json ~/.claude/settings.json
+rm -f ~/.claude/hooks/notify.sh ~/.claude/hooks/clawd.png
+rm -rf ~/.claude/notificaciones
+brew uninstall terminal-notifier
 ```
