@@ -6,26 +6,9 @@ Tema para la **Terminal nativa de macOS**, inspirado en el de S4vitar: prompt Po
 
 Además instala las **notificaciones de Claude Code**: un aviso de macOS cada vez que Claude termina una tarea, con el resumen completo a un clic, y otros extras (ver [Extras](#extras-terminal-y-claude-code)).
 
-## Instalar con Claude Code
+## Prompt de instalación
 
-Así se deja cualquier Mac igual: el tema de la Terminal y las notificaciones de Claude Code.
-
-### Antes (lo haces tú, una sola vez)
-
-Estos pasos piden tu contraseña, así que Claude no puede hacerlos por ti.
-
-1. Instala Claude Code:
-   ```bash
-   curl -fsSL https://claude.ai/install.sh | bash
-   ```
-2. Instala Homebrew:
-   ```bash
-   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-   ```
-
-### El prompt
-
-Abre Claude Code (`claude` en la terminal o la app de escritorio) y pega esto:
+Pégalo en un asistente de IA que pueda usar tu terminal, de preferencia Claude Code:
 
 ```text
 Instala la configuración de terminal del repo público de GitHub IFEE09/mac-terminal-setup.
@@ -35,17 +18,10 @@ Instala la configuración de terminal del repo público de GitHub IFEE09/mac-ter
 3. Verifica que Homebrew esté instalado. Si no, detente y dime qué comando correr: pide contraseña y lo tengo que hacer yo.
 4. Ejecuta `~/mac-terminal-setup/install.sh`.
 5. Verifica lo que dice la sección "Verificación" del README y dime el resultado de cada punto (incluida la notificación de prueba).
-6. Recuérdame los pasos manuales de notificaciones (permitir terminal-notifier y ponerlo en Persistente), abrir una ventana nueva de la Terminal y reiniciar Claude Code para que tome el hook de notificaciones.
+6. Recuérdame los pasos manuales de notificaciones (permitir terminal-notifier y ponerlo en Persistente), abrir una ventana nueva de la Terminal y, si uso Claude Code, reiniciarlo para que tome el hook de notificaciones.
 ```
 
-El instalador también deja a Claude respondiendo en español y en estilo breve (ver [Preferencias de Claude](#preferencias-de-claude)).
-
-### A mano
-
-```bash
-git clone https://github.com/IFEE09/mac-terminal-setup.git ~/mac-terminal-setup
-~/mac-terminal-setup/install.sh   # requiere Homebrew
-```
+A mano: `git clone https://github.com/IFEE09/mac-terminal-setup.git ~/mac-terminal-setup && ~/mac-terminal-setup/install.sh` (requiere Homebrew).
 
 ## Opcional: Claude Usage
 
