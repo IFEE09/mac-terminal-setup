@@ -1,6 +1,6 @@
 # mac-terminal-setup
 
-Tema para la **Terminal nativa de macOS**, inspirado en el de S4vitar: prompt Powerlevel10k, fuente Hack Nerd Font, fondo transparente con desenfoque y colores vivos. Además configura la Terminal para recuperar sus ventanas y agrega notificaciones de Claude Code (ver [Extras](#extras-terminal-y-claude-code)).
+Tema para la **Terminal nativa de macOS**, inspirado en el de S4vitar: prompt Powerlevel10k, fuente Hack Nerd Font, fondo transparente con desenfoque, colores vivos y neofetch. Además configura la Terminal para recuperar sus ventanas y agrega notificaciones de Claude Code (ver [Extras](#extras-terminal-y-claude-code)).
 
 **Regla principal para la Terminal: solo aspecto.** No agrega atajos de teclado, no reemplaza comandos (`ls` y `cat` siguen siendo los de Mac) y no cambia el comportamiento de ninguna tecla. Solo afecta a la Terminal de Mac: VS Code, la app de Claude y cualquier otra terminal quedan igual.
 
@@ -43,6 +43,7 @@ git clone https://github.com/IFEE09/claude-usage.git ~/claude-usage
 | zsh-syntax-highlighting | Comando en verde si existe, rojo si no | `brew install zsh-syntax-highlighting` |
 | Perfil "Savitar" | Fuente, transparencia, colores y cursor de la Terminal | `terminal/make-profile.js` |
 | Recuperar ventanas | La Terminal reabre sus ventanas y pestañas tras ⌘Q | `defaults write com.apple.Terminal NSQuitAlwaysKeepsWindows` |
+| neofetch | Logo de Apple y datos de la Mac al escribir `neofetch` | Descarga de la versión 7.1.0 a `~/.local/bin` (Homebrew ya no lo tiene) |
 | terminal-notifier + jq | Notificaciones de Claude Code al terminar | `brew install terminal-notifier jq` |
 | Hook de Claude Code | Aviso al terminar una tarea | `claude/notify.sh` + `claude/settings.json` |
 
@@ -67,7 +68,8 @@ claude/CLAUDE.md           Preferencias globales de Claude (español, breve) →
 4. Respalda `~/.zshrc` y `~/.p10k.zsh` si existen y son distintos (`.backup-FECHA`), y copia los del repo.
 5. Genera `Savitar.terminal` con `make-profile.js`, lo importa (se abre una ventana de la Terminal) y lo deja como perfil predeterminado y de inicio.
 6. Activa que la Terminal recupere sus ventanas al reabrirse.
-7. Instala `terminal-notifier` y `jq`, copia `notify.sh` y mezcla `claude/settings.json` en `~/.claude/settings.json` (con respaldo `.backup-FECHA`; conserva tus otros ajustes y hooks, reemplaza hooks anteriores de `notify.sh` y no duplica nada si se corre otra vez). Al final pide permiso de notificaciones.
+7. Descarga neofetch 7.1.0 desde su repo en GitHub, comprueba su huella SHA-256 y lo deja en `~/.local/bin`. Homebrew lo retiró porque el proyecto ya no se mantiene; esa versión es la última y funciona en macOS.
+8. Instala `terminal-notifier` y `jq`, copia `notify.sh` y mezcla `claude/settings.json` en `~/.claude/settings.json` (con respaldo `.backup-FECHA`; conserva tus otros ajustes y hooks, reemplaza hooks anteriores de `notify.sh` y no duplica nada si se corre otra vez). Al final pide permiso de notificaciones.
 
 ## Detalles del perfil de la Terminal
 
@@ -184,6 +186,9 @@ terminal-notifier -diagnose | grep -E 'authorization|alert style'            # �
 
 # 10. El script de notificaciones funciona
 echo '{"cwd":"/tmp/prueba","last_assistant_message":"Prueba"}' | ~/.claude/hooks/notify.sh   # → aparece una notificación
+
+# 11. neofetch instalado
+zsh -ic 'neofetch --version'                                                 # → Neofetch 7.1.0
 ```
 
 ## Desinstalar
@@ -197,6 +202,7 @@ brew uninstall --cask font-hack-nerd-font
 
 # Extras
 defaults delete com.apple.Terminal NSQuitAlwaysKeepsWindows
+rm -f ~/.local/bin/neofetch && rm -rf ~/.config/neofetch
 jq 'del(.hooks.Stop[] | select(any(.hooks[]; .command | contains("notify.sh"))))' ~/.claude/settings.json > /tmp/s.json && mv /tmp/s.json ~/.claude/settings.json
 rm -f ~/.claude/hooks/notify.sh ~/.claude/hooks/clawd.png
 rm -rf ~/.claude/notificaciones

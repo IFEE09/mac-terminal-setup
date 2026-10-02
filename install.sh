@@ -64,7 +64,21 @@ ok "Perfil 'Savitar' importado y marcado como predeterminado"
 defaults write com.apple.Terminal NSQuitAlwaysKeepsWindows -bool true
 ok "La Terminal recuperará sus ventanas al reabrirse"
 
-# 6. Claude Code: notificaciones al terminar y historial de sesiones
+# 6. neofetch: logo de Apple y datos de la Mac (se corre a mano con `neofetch`)
+# Homebrew ya no lo tiene: se descarga la versión 7.1.0 (la última) y se comprueba su huella
+info "Instalando neofetch..."
+NEOFETCH_URL="https://raw.githubusercontent.com/dylanaraps/neofetch/7.1.0/neofetch"
+NEOFETCH_SHA256="3dc33493e54029fb1528251552093a9f9a2894fcf94f9c3a6f809136a42348c7"
+NEOFETCH_TMP="$(mktemp)"
+curl -fsSL "$NEOFETCH_URL" -o "$NEOFETCH_TMP" || fail "No se pudo descargar neofetch"
+echo "$NEOFETCH_SHA256  $NEOFETCH_TMP" | shasum -a 256 -c --status \
+  || { rm -f "$NEOFETCH_TMP"; fail "El neofetch descargado no coincide con la versión 7.1.0"; }
+mkdir -p ~/.local/bin
+install -m 755 "$NEOFETCH_TMP" ~/.local/bin/neofetch
+rm -f "$NEOFETCH_TMP"
+ok "neofetch 7.1.0 instalado en ~/.local/bin"
+
+# 7. Claude Code: notificaciones al terminar y historial de sesiones
 info "Configurando Claude Code..."
 brew install terminal-notifier jq
 mkdir -p ~/.claude/hooks
